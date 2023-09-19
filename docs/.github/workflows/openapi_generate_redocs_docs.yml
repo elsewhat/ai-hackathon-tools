@@ -1,0 +1,62 @@
+name: OpenAPI generate docs
+# Redoc: https://github.com/Redocly/redoc
+# Creates OpenAPI documentation based on the OpenAPI contract.
+# Uses snippet-encricher-cli https://github.com/cdwv/oas3-api-snippet-enricher to add code examples to the developer documentation.
+# The OpenAPI documentation is configured to be published to Github pages (uses branch gh-pages-source as a base).
+# Updated for every commit of the openapi-contract/*.yaml
+# If commit is done in a branch, this will be represented in the url path.
+
+on: 
+  #Trigger manually
+  workflow_dispatch:
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/redocly/redoc/cli:v2.0.0-rc.77
+    name: Generate docs
+    steps:
+      # first checkout your code
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: redoc-cli
+        run: |
+          redoc-cli bundle Bouvet.AzureOpenAI.Integrations/2023-09-01-preview_inference.json -o index.html -t docs/redoc-template.hbs --options.requiredPropsFirst=true --options.jsonSampleExpandLevel=3 --options.theme.spacing.sectionVertical=10 --options.theme.typography.fontFamily=Equinor,Roboto,sans-serif --options.theme.colors.primary.main=#007079
+      - name: Upload redoc index.html file
+        uses: actions/upload-artifact@v2
+        with:
+          name: redoc-index
+          path: index.html
+  upload-docs:
+    runs-on: ubuntu-latest
+    needs: generate-docs
+    name: Upload docs
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: gh-pages-source 
+      - name: Download redoc index.html file
+        uses: actions/download-artifact@v2
+        with:
+          name: redoc-index
+      - name: Get branch environment variable
+        shell: bash
+        run: echo "GITHUB_BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+      - name: Main branch copy
+        if: env.GITHUB_BRANCH == 'main'
+        run: mv index.html docs/
+      - name: Copy to latest if not main
+        if: env.GITHUB_BRANCH != 'main' 
+        run: mkdir -p docs/latest  && cp index.html docs/latest
+      - name: Move to normal release branch
+        if: env.GITHUB_BRANCH != 'main' 
+        run: mkdir -p docs/$GITHUB_BRANCH  && mv index.html docs/$GITHUB_BRANCH
+      # commit generated redoc to gh-pages-source  branch
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: gh-pages-source
+          commit_message: 'auto: Generated updated redoc developer documentation'
+          commit_user_name: Github actions bot
+          commit_user_email: dapa@equinor.com
