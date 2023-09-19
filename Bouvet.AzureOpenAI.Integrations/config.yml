@@ -1,0 +1,7 @@
+additionalProperties:
+  targetFramework: net6.0
+  netCoreProjectFile: true
+  packageName: 'AzureOpenAI'
+  optionalEmitDefaultValues: true
+  optionalProjectFile: false
+  useDateTimeOffset: true
