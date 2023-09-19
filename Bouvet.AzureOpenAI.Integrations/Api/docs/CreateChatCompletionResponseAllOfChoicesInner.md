@@ -1,0 +1,13 @@
+# AzureOpenAI.Model.CreateChatCompletionResponseAllOfChoicesInner
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Index** | **int** |  | [optional] 
+**FinishReason** | **string** |  | [optional] 
+**Message** | [**ChatCompletionResponseMessage**](ChatCompletionResponseMessage.md) |  | [optional] 
+**ContentFilterResults** | [**ContentFilterResults**](ContentFilterResults.md) |  | [optional] 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
